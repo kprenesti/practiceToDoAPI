@@ -1,7 +1,21 @@
 var express = require('express');
 var app = express();
 var PORT = process.env.PORT || 3030;
+var parser = require('body-parser');
 var todos = require('./todos.js');
+app.use(parser.json());
+
+var todoNextId = 0;
+
+app.post('/todos', function(req, res){
+    var body = req.body;
+    body.id = todoNextId;
+    todos.push(body);
+    todoNextId++;
+    res.json(body);
+});
+
+
 
 app.get('/', function(req, res){
   res.send('Todo API Root');
