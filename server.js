@@ -46,6 +46,9 @@ app.get('/todos/:id', function(req, res){
 app.delete('/todos/:id', function(req, res){
   var todoID = parseInt(req.params.id);
   var unwanted = _.findWhere(todos, {id: todoID});
+  if(!unwanted){
+    res.status(404).send('No item with id '+ todoID +' found.');
+  }
   var cleanedTodos = _.without(todos, unwanted);
   console.log(cleanedTodos);
   res.json(cleanedTodos);
