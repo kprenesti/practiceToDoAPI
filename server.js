@@ -8,7 +8,7 @@ app.use(parser.json());
 
 var todoNextId = 0;
 
-//Add a todo to the list
+//========= ADD AN ITEM TO TODOS (POST)====//
 app.post('/todos', function(req, res){
     var body = _.pick(req.body, 'description', 'completed');
     if(!_.isBoolean(body.completed)|| !_.isString(body.description)|| body.description.trim().length === 0){
@@ -21,7 +21,7 @@ app.post('/todos', function(req, res){
 });
 
 
-//Get all todos
+//======== GET ALL TODOS (GET) ===========//
 app.get('/', function(req, res){
   res.send('Todo API Root');
 });
@@ -31,7 +31,7 @@ app.get('/todos', function(req, res){
 });
 
 
-//Get single todo by ID
+// ======== GET INDIVIDUAL ITEM (GET) ========//
 app.get('/todos/:id', function(req, res){
   var todoID = parseInt(req.params.id);
   var matching = _.findWhere(todos, {id: todoID});
@@ -42,7 +42,7 @@ app.get('/todos/:id', function(req, res){
   }
 });
 
-//Delete a todo from the list
+// ====== DELETE TODOS (DELETE) =======//
 app.delete('/todos/:id', function(req, res){
   var todoID = parseInt(req.params.id);
   var unwanted = _.findWhere(todos, {id: todoID});
@@ -54,7 +54,7 @@ app.delete('/todos/:id', function(req, res){
   res.json(cleanedTodos);
 });
 
-//Update a todo (PUT)
+// ==== UPDATE TODOS (PUT) ===========//
 app.put('/todos/:id', function(req, res){
   //Establish variables
   var body = _.pick(req.body, 'description', 'completed');
@@ -87,6 +87,26 @@ app.put('/todos/:id', function(req, res){
   res.json(itemToUpdate);
 
 }); //end put
+
+//====== QUERY ITEMS (GET) =========//
+app.get('/todos', function (req, res) {
+	var queryParams = req.query;
+	var filteredTodos = todos;
+
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'true') {
+		filteredTodos = _.where(filteredTodos, {completed: true});
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed == 'false') {
+		filteredTodos = _.where(filteredTodos, {completed: false});
+	}
+
+	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+		  return filteredTodos = _.filter(filteredTodos, function (todo) {
+			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+		});
+	}
+
+	res.json(filteredTodos);
+});
 
 
 app.listen(PORT, function(){
