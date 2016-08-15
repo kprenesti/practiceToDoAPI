@@ -19,6 +19,15 @@ module.exports = function(sequelize, DataTypes){
         len: [5, 25]
       }
     }, //end username
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: false
+      validate: {
+        isAlpha: true,
+        len: [2, 25]
+      }
+    }
     salt: {
       type: DataTypes.STRING
     }, //end salt
