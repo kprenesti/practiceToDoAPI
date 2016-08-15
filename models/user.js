@@ -22,12 +22,12 @@ module.exports = function(sequelize, DataTypes){
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: false
+      unique: false,
       validate: {
         isAlpha: true,
         len: [2, 25]
       }
-    }
+    },
     salt: {
       type: DataTypes.STRING
     }, //end salt

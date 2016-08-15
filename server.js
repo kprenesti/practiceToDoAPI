@@ -132,10 +132,10 @@ app.post('/users', function(req, res){
 
 app.post('users/signin', function(req, res){
   var body = _.pick(req.body, 'username', 'password');
-  if(_.isString(body.username) && _.isString(body.password){
+  if(_.isString(body.username) && _.isString(body.password)){
     res.toPublicJSON(body);
-  });
-})
+  }
+});
 
 
 db.sequelize.sync().then(function(){
