@@ -4,22 +4,15 @@ var PORT = process.env.PORT || 3030;
 var parser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
-var todos = require('./todos.js');
 app.use(parser.json());
 
-var todoNextId = 0;
 
 //========= ADD AN ITEM TO TODOS (POST)====//
 app.post('/todos', function(req, res){
     var body = _.pick(req.body, 'description', 'completed');
 
-    if(!_.isBoolean(body.completed)|| !_.isString(body.description)|| body.description.trim().length === 0){
-      return res.status(400).json(e);
-    }
-    db.todo.create({
-      description: body.description,
-      completed: body.completed
-    }).then(function(todo){
+
+    db.todo.create(body).then(function(todo){
       res.status(200).json(todo);
     });
     // body.id = todoNextId;
@@ -29,6 +22,10 @@ app.post('/todos', function(req, res){
 });
 
 //====== QUERY ITEMS OR GET ALL ITEMS (GET) =========//
+app.get('/', function(req, res) {
+	res.send('Todo List API Root');
+});
+
 app.get('/todos', function (req, res) {
 	var query = req.query;
   var where = {};
@@ -82,7 +79,7 @@ app.delete('/todos/:id', function(req, res){
       res.status(204).send('Item successfully deleted.');
     }
   })
-  
+
   //   return res.status(404).send('No item with id '+ todoID +' found.');
   // }
   // var cleanedTodos = _.without(todos, unwanted);
@@ -95,34 +92,50 @@ app.put('/todos/:id', function(req, res){
   //Establish variables
   var body = _.pick(req.body, 'description', 'completed');
   var todoID = parseInt(req.params.id);
-  var itemToUpdate = _.findWhere(todos, {id: todoID});
-  var validAtts = {};
-
-  //Check for matching ids
-  if(!itemToUpdate){
-    return res.status(404).send();
-  }
+  var atts = {};
 
   //Check to make sure data submitted is valid
-  if(body.hasOwnProperty('completed')&& _.isBoolean(body.completed)){
-    validAtts.completed = body.completed;
-  } else if (body.hasOwnProperty(body.completed)){
-    res.status(400).send('Bad request.  Try again.');
+  if(body.hasOwnProperty('completed')){
+    atts.completed = body.completed;
   }
 
-  if(body.hasOwnProperty('description')&& _.isString(body.description) && body.description.trim().length > 0){
-    validAtts.description = body.description;
-  } else if (body.hasOwnProperty(body.description)){
-    res.status(400).send('Bad request.  Try again.');
+  if(body.hasOwnProperty('description')){
+    atts.description = body.description;
   }
 
-  //Update item
-  _.extend(itemToUpdate, validAtts);
-
-  //Send response data
-  res.json(itemToUpdate);
+  db.todo.findById(todoID)
+    .then(function(todo){
+      if(todo){
+        return todo.update(atts).then(function(todo){
+          res.json(todo.toJSON());
+        }, function(e){
+          res.status(400).json(e);
+        });
+      } else {
+        return res.status(404).send();
+      }
+    }, function(){
+      res.status(500).send();
+    });
 
 }); //end put
+
+//============ USER FUNCTIONS ============//
+app.post('/users', function(req, res){
+  var body = _.pick(req.body, 'email', 'password', 'name');
+  db.user.create(body).then(function(user){
+    res.json(user.toJSON());
+  }, function(e){
+    res.status(400).json(e);
+  });
+});
+
+app.post('users/signin', function(req, res){
+  var body = _.pick(req.body, 'username', 'password');
+  if(_.isString(body.username) && _.isString(body.password){
+    res.toPublicJSON(body);
+  });
+})
 
 
 db.sequelize.sync().then(function(){
